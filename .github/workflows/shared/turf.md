@@ -16,6 +16,10 @@ tools:
   web-fetch:
   github:
     toolsets: [default, security_advisories]
+    # gh-aw's built-in tool map misses the advisory tools (list_global_security_advisories,
+    # get_global_security_advisory) that GitHub's server exposes, and refuses them by name,
+    # so allow the whole server: it runs read-only, limited to the toolsets above.
+    allowed: ["*"]
 network:
   allowed: [defaults, github, host.docker.internal, "*.lambda-url.us-west-2.on.aws"]
 pre-agent-steps:
