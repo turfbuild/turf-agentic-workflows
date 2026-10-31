@@ -8,6 +8,10 @@ terraform {
       source  = "hashicorp/archive"
       version = "~> 2.7"
     }
+    vault = {
+      source  = "hashicorp/vault"
+      version = "5.4.0"
+    }
   }
 
   # A partial backend: the bucket, key and region differ per environment, so the
@@ -33,3 +37,7 @@ provider "aws" {
     }
   }
 }
+
+# Vault's address and token come from VAULT_ADDR and VAULT_TOKEN in the
+# environment.
+provider "vault" {}
