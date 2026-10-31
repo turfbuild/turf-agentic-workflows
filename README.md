@@ -33,6 +33,37 @@ Everything the agent needs to know about a run comes from files on disk:
 `.turf-ci/comments.json` (the earlier plan comment to compare against), written by a step
 before the agent starts, and the two policy files.
 
+## Use it in your own repository
+
+gh-aw imports resolve across repositories, so one line brings the whole component (Turf
+installed, the AWS session minted by OIDC, the engine and the server started before the agent,
+stopped and logged after it) into a workflow of your own:
+
+```yaml
+imports:
+  - turfbuild/turf-agentic-workflows/.github/workflows/shared/turf.md@main
+mcp-servers:
+  turf:
+    type: http
+    url: http://localhost:3000/mcp
+    allowed: [skill_deployment, read_skill_file, init, open, up, show, status, cancel]
+```
+
+Pin `@main` to a tag or a commit when you want a fixed version; `gh aw compile` caches the
+import by commit SHA under `.github/aw/imports/`. The import expects a GitHub Environment on the
+job (`environment: staging`, say) that defines `AWS_ROLE_ARN`, `AWS_REGION`, `TF_STATE_BUCKET`,
+`TF_STATE_KEY`, `TURF_ENVIRONMENT` and `TURF_APPROVAL_POLICY`, plus any `TF_VAR_*` your
+configuration reads; it plans the configuration at `infra/` and leaves the Turf tool list to your
+workflow, so a plan run cannot `apply`. The runbook the agent follows can be pulled at run time
+by URL, or copied and edited:
+
+```markdown
+{{#runtime-import https://raw.githubusercontent.com/turfbuild/turf-agentic-workflows/main/.github/workflows/shared/turf-runbook.md}}
+```
+
+It reads `policy/approval.md` and `policy/providers.md` from your repository: copy the two
+files here and rewrite the paragraphs for your environments.
+
 ## Bootstrap
 
 1. `aws login` (or an `AWS_PROFILE`) and `export GITHUB_TOKEN=$(gh auth token)` in the
