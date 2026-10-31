@@ -19,6 +19,7 @@ module.exports.handler = async (event) => {
       message,
       function: process.env.AWS_LAMBDA_FUNCTION_NAME,
       environment: process.env.ENVIRONMENT,
+      region: process.env.AWS_REGION,
     }),
   };
 };
