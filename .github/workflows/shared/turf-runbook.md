@@ -38,7 +38,9 @@ If the `up` call is cut off before it returns, call `status({})` to learn the co
 
 ### 5. Review the plan
 
-`show({ convergence_id })` and read the plan document (`resource_changes`, `resource_drift`, `output_changes`). Summarize it in the deployment skill's format: the counts line, one line per address with its change symbol, before → after for updates and replacements (never a sensitive value), every entry of `plan.invocations`, and "a second round will follow" when `plan.deferred` is non-zero.
+`show({ convergence_id })` returns the plan document (`resource_changes`, `resource_drift`, `output_changes`). It is large. When the tool result is saved to a file instead of shown, do not page through it: run `jq -c -f .github/workflows/shared/plan-summary.jq <that file>`, which prints one line per change and per drifted resource with every attribute that differs, before and after, then the output changes, and summarize from that.
+
+Summarize in the deployment skill's format: the counts line, one line per address with its change symbol, before → after for every attribute that differs in an update or a replacement (never a sensitive value), every entry of `plan.invocations`, and "a second round will follow" when `plan.deferred` is non-zero. For drift, one line per drifted address with the attributes that differ, and say whether it looks like the provider catching up with the last apply (null become empty, a value another resource in this configuration set) or a change made outside the configuration; only the second needs a person's attention.
 
 Evaluate `policy/approval.md` for the context's `approval_policy` and write the verdict: `approve` or `refuse`, with the rule that decided it.
 
@@ -50,7 +52,7 @@ Every report is one comment, in this order:
 
 1. A heading line: `Turf plan: X to add, Y to change, Z to destroy` (after an apply: `Turf apply: X added, Y changed, Z destroyed`), then `environment: <environment>`.
 2. The Providers table.
-3. The plan summary from step 5; put the per-address lines in a `<details>` block when there are more than about fifteen, with the counts line outside it.
+3. The plan summary from step 5: the counts line, then the per-address lines in a fenced code block tagged `diff`, each address on a line starting with its change symbol and each attribute that differs on an indented line below it as `attribute: before → after`. Outside a code block the comment's markdown is escaped and the lines run together. Wrap the code block in a `<details>` block when there are more than about fifteen addresses.
 4. The approval verdict and its rule, and the comparison with the reviewed plan when there was one.
 5. After an apply: `Round k: applied N, deferred M` per round, each turf action's progress lines, and the root outputs from `output({})`.
 6. A closing fenced block tagged `turf` holding one JSON object:
