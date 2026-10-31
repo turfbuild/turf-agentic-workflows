@@ -7,6 +7,7 @@ on:
 environment: staging
 engine:
   id: claude
+  model: claude-sonnet-5-5
 timeout-minutes: 30
 permissions:
   contents: read
