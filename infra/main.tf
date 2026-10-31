@@ -18,7 +18,7 @@ data "archive_file" "hello" {
 # One role shared by the whole fleet. Lambda needs only permission to write its
 # own logs, which is exactly what AWSLambdaBasicExecutionRole grants.
 resource "aws_iam_role" "lambda_exec" {
-  name = "${var.name_prefix}-exec"
+  name = "${var.name_prefix}-lambda-exec"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
