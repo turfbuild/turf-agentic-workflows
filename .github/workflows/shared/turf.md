@@ -13,7 +13,6 @@ engine:
 tools:
   timeout: 600
   bash: ["cat:*", "ls:*", "echo:*", "jq:*", "curl:*"]
-  web-fetch:
   github:
     toolsets: [default, security_advisories]
     # gh-aw's built-in tool map misses the advisory tools (list_global_security_advisories,
