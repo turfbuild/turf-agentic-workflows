@@ -1,0 +1,11 @@
+# provider and module installs
+.terraform/
+# files the workflows write for the agent
+.turf-ci/
+# local state (setup/ keeps its state here on purpose; nothing in infra/ should)
+*.tfstate
+*.tfstate.*
+# the deployment package data.archive_file builds at plan time
+infra/hello-world.zip
+# per-session Turf files
+.turf/
