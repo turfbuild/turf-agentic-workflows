@@ -1,7 +1,5 @@
 # Turf on GitHub Agentic Workflows
 
-> Work in progress: a spike. Nothing here is a release.
-
 An autonomous infrastructure loop: [Turf](https://turf.build) plans and applies a
 Terraform configuration from inside
 [GitHub Agentic Workflows](https://github.github.com/gh-aw/), and the agent driving it
