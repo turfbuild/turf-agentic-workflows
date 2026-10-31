@@ -52,7 +52,8 @@ resource "aws_lambda_function" "hello" {
   # value reached the running code, not merely the state file.
   environment {
     variables = {
-      GREETING = var.greeting
+      GREETING    = var.greeting
+      ENVIRONMENT = var.environment
     }
   }
 }
@@ -77,13 +78,16 @@ resource "aws_lambda_permission" "public_url" {
   function_url_auth_type = "NONE"
 }
 
-# The release marker. Its input changes whenever the greeting or the fleet's
-# URLs change, so the verify action in rollout.turf.hcl runs after the first
-# create and after every patch, once for the whole fleet, with the real URLs.
+# The release marker. Its input changes whenever the greeting, the environment,
+# the fleet's URLs or the function code change, so the verify action in
+# rollout.turf.hcl runs after the first create and after every patch, once for
+# the whole fleet, with the real URLs.
 resource "terraform_data" "release" {
   input = {
-    greeting = var.greeting
-    urls     = aws_lambda_function_url.hello[*].function_url
+    greeting    = var.greeting
+    environment = var.environment
+    urls        = aws_lambda_function_url.hello[*].function_url
+    code        = data.archive_file.hello.output_base64sha256
   }
 
   depends_on = [aws_lambda_permission.public_url]

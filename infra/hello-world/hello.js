@@ -18,6 +18,7 @@ module.exports.handler = async (event) => {
     body: JSON.stringify({
       message,
       function: process.env.AWS_LAMBDA_FUNCTION_NAME,
+      environment: process.env.ENVIRONMENT,
     }),
   };
 };
