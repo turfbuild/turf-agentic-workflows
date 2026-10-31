@@ -21,6 +21,22 @@ concurrency:
   cancel-in-progress: false
 imports:
   - shared/turf.md
+pre-agent-steps:
+  # gh-aw ends a run green whenever its agent finishes, so a staging run is green even when
+  # its convergence failed (a failed verify, say). The staging agent labels the merged pull
+  # request only when its apply converged: production starts only on that label.
+  - name: Require a converged staging apply of this commit
+    env:
+      GH_TOKEN: ${{ github.token }}
+      HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+    run: |
+      PR=$(gh pr list --state merged --search "$HEAD_SHA" --json number --jq '.[0].number // empty')
+      if [ -n "$PR" ] && gh pr view "$PR" --json labels --jq '.labels[].name' | grep -qx 'turf/applied-staging'; then
+        echo "Staging converged for #$PR."
+      else
+        echo "::error::Staging has not converged for $HEAD_SHA (no turf/applied-staging label on its pull request); production waits."
+        exit 1
+      fi
 mcp-servers:
   turf:
     type: http

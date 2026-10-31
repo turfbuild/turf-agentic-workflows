@@ -30,7 +30,7 @@ If `open` reports a `convergence`, or fails because the state is locked, do not 
 
 `up({})`. The variables arrive from the server's environment as `TF_VAR_*`; pass none yourself.
 
-- `converged` with nothing applied: report "All resources up to date." and stop.
+- `converged` with nothing applied: report "All resources up to date." and stop. An apply run also adds the label the workflow names, since the environment already matches this commit.
 - `awaiting_approval`: continue.
 - Anything else: report the outcome in the skill's words, with the `rounds[]` detail, and stop.
 
@@ -82,7 +82,7 @@ The workflow's own instructions, above this runbook, say whether this run **plan
 **Apply.** If the verdict is `refuse`: post the report with `"kind": "refused"`, then `cancel({ cause: "<the rule that refused>" })`, and stop; nothing is applied. If the verdict is `approve`: `apply({ convergence_id, plan_digest })` with the digest `up` returned, then converge:
 
 - `awaiting_approval` (a later round): review it exactly as in step 5 under the same policy; approve it by its own digest, or refuse as above.
-- `awaiting_actions`: perform every open request with your tools, as its prompt says, and answer all of them in one `apply({ convergence_id, action_results })`. Say what you did in `progress`, one line each. A step you could not perform, or a check that failed, is `succeeded: false` with an `error` diagnostic saying why. Never report a success you did not observe.
+- `awaiting_actions`: perform every open request with your tools, as its prompt says, and answer all of them in one `apply({ convergence_id, action_results })`. Say what you did in `progress`, one line each. A step you could not perform, or a check that failed, is `succeeded: false` with an `error` diagnostic saying why. Never report a success you did not observe. The sandbox runs only simple shell commands: fetch a URL with web fetch, or with one plain `curl -sS -m 15 -w '\n%{http_code}' <url>` per URL, with no loop, pipe, `sleep` or `$(...)`; to retry, call it again.
 - `converged`: read `output({})`, post the report with `"kind": "apply"`, and add the label the workflow names.
 - `failed`, `stalled`, `exhausted`, `stale`, `cancelled`, `error`: post the report with `"kind": "error"` and the detail from `rounds[]`, and `cancel` if the convergence is still paused.
 - If an `apply` call is cut off before it returns, call it again with the same arguments: the convergence goes on in the engine, and the second call follows it.
