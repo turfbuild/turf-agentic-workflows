@@ -6,6 +6,13 @@ locals {
   account_id   = data.aws_caller_identity.current.account_id
   state_bucket = var.state_bucket != "" ? var.state_bucket : "turf-agentic-workflows-state-${local.account_id}"
   oidc_arn     = var.create_oidc_provider ? aws_iam_openid_connect_provider.github[0].arn : "arn:aws:iam::${local.account_id}:oidc-provider/token.actions.githubusercontent.com"
+
+  # GitHub mints this repository's OIDC subject in its immutable form, naming the
+  # owner and the repository by ID as well as by name, so a renamed or re-created
+  # repository of the same name cannot assume these roles. A repository still on
+  # the legacy form (GET repos/<repo>/actions/oidc/customization/sub reports
+  # use_immutable_subject false) presents "repo:<owner>/<name>" instead.
+  oidc_subject_prefix = "repo:${local.owner}@${data.github_organization.owner.id}/${local.repo_name}@${data.github_repository.demo.repo_id}"
 }
 
 # GitHub's OIDC issuer, so a workflow job can assume a role with its own
@@ -71,7 +78,7 @@ resource "aws_iam_role" "ci" {
       Condition = {
         StringEquals = {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
-          "token.actions.githubusercontent.com:sub" = "repo:${var.repository}:environment:${each.key}"
+          "token.actions.githubusercontent.com:sub" = "${local.oidc_subject_prefix}:environment:${each.key}"
         }
       }
     }]

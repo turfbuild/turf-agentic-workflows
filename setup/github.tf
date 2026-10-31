@@ -1,3 +1,9 @@
+# The owner's numeric ID, for the OIDC subject in aws.tf.
+data "github_organization" "owner" {
+  name         = local.owner
+  summary_only = true
+}
+
 data "github_repository" "demo" {
   full_name = var.repository
 }
