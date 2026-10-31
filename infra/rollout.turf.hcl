@@ -11,15 +11,17 @@ action "turf_action" "verify" {
   config {
     prompt = <<-EOT
       The fleet was just deployed or patched. Fetch every URL in inputs.urls
-      (web fetch, or curl). Each must answer HTTP 200 with a JSON body whose
-      "message" equals inputs.greeting. A URL may take a few seconds to go live:
-      retry up to three times, five seconds apart. Report one progress line per
-      function, with the URL and the message it returned. Fail, naming the URL,
-      if any does not answer as expected.
+      with curl. Each must answer HTTP 200 with a JSON body whose "message"
+      equals inputs.greeting and whose "environment" equals inputs.environment.
+      A URL may take a few seconds to go live: retry it up to three times.
+      Report one progress line per function, with the URL and the message and
+      environment it returned. Fail, naming the URL, if any does not answer as
+      expected.
     EOT
     inputs = {
-      greeting = caller.output.greeting
-      urls     = caller.output.urls
+      greeting    = caller.output.greeting
+      environment = caller.output.environment
+      urls        = caller.output.urls
     }
   }
 }

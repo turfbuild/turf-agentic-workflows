@@ -5,7 +5,7 @@ variable "aws_region" {
 }
 
 variable "environment" {
-  description = "Name of the environment this fleet belongs to, for the Environment tag."
+  description = "Name of the environment this fleet belongs to: each function reports it, and it sets the Environment tag."
   type        = string
   default     = "development"
 }

@@ -15,8 +15,8 @@ staging succeeded              →  turf-apply-production  the same under the pr
 ```
 
 The configuration is a fleet of AWS Lambda functions with public URLs
-([`infra/`](infra)); the verify step is a Turf action that fetches every URL and checks the
-greeting ([`infra/rollout.turf.hcl`](infra/rollout.turf.hcl)). The rules the agent reads are
+([`infra/`](infra)); the verify step is a Turf action that fetches every URL and checks its
+greeting and environment ([`infra/rollout.turf.hcl`](infra/rollout.turf.hcl)). The rules the agent reads are
 prose in [`policy/`](policy). The demonstration environment (two GitHub Environments with
 their variables, one AWS role per environment, the state bucket) is Terraform in
 [`setup/`](setup), applied locally with Turf.
