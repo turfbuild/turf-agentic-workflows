@@ -30,9 +30,16 @@ resource "aws_iam_role" "lambda_exec" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_policy" {
+resource "aws_iam_role_policy_attachment" "basic_execution" {
   role       = aws_iam_role.lambda_exec.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+# Renamed from aws_iam_role_policy_attachment.lambda_policy, for the policy it attaches. The
+# moved block carries the state over, so the plan is a move, not a replacement.
+moved {
+  from = aws_iam_role_policy_attachment.lambda_policy
+  to   = aws_iam_role_policy_attachment.basic_execution
 }
 
 resource "aws_lambda_function" "hello" {
