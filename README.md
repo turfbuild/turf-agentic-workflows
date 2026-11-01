@@ -80,7 +80,9 @@ by URL, or copied and edited:
 
 The runbook on `main` follows the Turf release the import on `main` installs (`TURF_VERSION`
 in `shared/turf.md`; from 1.3 each round is planned with `plan` before `apply` approves it):
-pull both from `main`, or pin both to the same commit.
+pull both from `main`, or pin both to the same commit. The import is cached at compile time and
+the runbook fetched at run time, so when you take a new release, recompile, and add any tool the
+runbook names to your `allowed:` list (from 1.3, `plan`).
 
 It reads `policy/approval.md` and `policy/providers.md` from your repository: copy the two
 files here and rewrite the paragraphs for your environments.

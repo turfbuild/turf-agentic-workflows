@@ -131,7 +131,11 @@ pre-agent-steps:
 
       # 0.0.0.0, so the gateway's container reaches it at host.docker.internal; the
       # bearer token in TURF_MCP_AUTH_TOKEN is what keeps everyone else out.
-      nohup "$BIN" --transport http --addr 0.0.0.0:3000 >"$LOGS/turf-server.out" 2>&1 &
+      # --deadline: every plan or apply call returns within it, with the stage the
+      # convergence is at for the agent to call again. The server's default (55 s)
+      # suits a client with a 60-second limit; the gateway allows 10 minutes
+      # (tool-timeout above), so a long round comes back once, not every minute.
+      nohup "$BIN" --transport http --addr 0.0.0.0:3000 --deadline 9m >"$LOGS/turf-server.out" 2>&1 &
       SERVER=$!
       for i in $(seq 1 30); do
         if curl -fsS -o /dev/null -X POST http://127.0.0.1:3000/mcp \

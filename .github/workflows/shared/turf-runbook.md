@@ -28,13 +28,14 @@ If `open` reports a `convergence`, or fails because the state is locked, do not 
 
 ### 4. Plan
 
-`up({})`. The variables arrive from the server's environment as `TF_VAR_*`; pass none yourself. It starts the convergence and returns at round 1's plan gate (`awaiting_plan`) with its `convergence_id`. Then `plan({ convergence_id })`:
+`up({})`. The variables arrive from the server's environment as `TF_VAR_*`; pass none yourself. It starts the convergence and returns at round 1's plan gate (`awaiting_plan`) with its `convergence_id`. If it returns an error or anything else, report it (step 6) and stop. Then `plan({ convergence_id })`:
 
+- `planning` (`ended: false`): the call reached the server's deadline and the round is still planning in the engine. Call `plan({ convergence_id })` again.
 - `converged` with nothing applied: report "All resources up to date." and stop. An apply run also adds the label the workflow names, since the environment already matches this commit.
 - `awaiting_approval`: continue.
 - Anything else: report the outcome in the skill's words, with the `rounds[]` detail, and stop.
 
-A `plan` result with `ended: false` (`planning`) reached the server's deadline: call `plan({ convergence_id })` again. If the `up` call is cut off before it returns, call `status({})` to learn the convergence id, then `plan({ convergence_id })`: it plans the round, or hands back a plan already made, approving nothing. Never call `up` a second time.
+A call cut off before it returns is made again with the same arguments: the convergence goes on in the engine, and the second call follows it. The one exception is `up`: if it is cut off, call `status({})` to learn the convergence id, then `plan({ convergence_id })`, which plans the round or hands back a plan already made, approving nothing. Never call `up` a second time.
 
 ### 5. Review the plan
 
@@ -87,11 +88,11 @@ The workflow's own instructions, above this runbook, say whether this run **plan
 
 **Apply.** If the verdict is `refuse`, or step 5 found a reviewed plan for this environment that this plan does not match: post the report with `"kind": "refused"` and the rule, or the difference, as the reason, then `cancel({ cause: "<the rule that refused, or what differs from the reviewed plan>" })`, and stop; nothing is applied. When a reviewed plan for this environment exists, it is the only plan an apply run approves on its own. If the verdict is `approve` and the plan matches, or there was no reviewed plan for this environment: `apply({ convergence_id, plan_digest })` with the digest `plan` returned, then converge:
 
-- `awaiting_plan` (a later round): `plan({ convergence_id })`, then review its plan exactly as in step 5 under the same policy; approve it by its own digest, or refuse as above.
+- `awaiting_plan` (a later round): `plan({ convergence_id })`. Its `planning` is called again as in step 4; at `awaiting_approval`, review the plan exactly as in step 5 under the same policy and approve it by its own digest, or refuse as above; any other result is handled by this list.
 - `awaiting_actions`: perform every open request with your tools, as its prompt says, and answer all of them in one `apply({ convergence_id, action_results })`. Say what you did in `progress`, one line each. A step you could not perform, or a check that failed, is `succeeded: false` with an `error` diagnostic saying why. Never report a success you did not observe. The sandbox runs only simple shell commands: fetch a URL with one plain `curl -sS -m 15 -w '\n%{http_code}' <url>` per URL, with no loop, pipe, `sleep` or `$(...)`; to retry, call it again.
 - `converged`: read `output({})`, post the report with `"kind": "apply"`, and add the label the workflow names.
 - `failed`, `stalled`, `exhausted`, `stale`, `cancelled`, `error`: post the report with `"kind": "error"` and the detail from `rounds[]`, and `cancel` if the convergence is still paused. When the run ended `failed` because a turf action answered `succeeded: false` after resources were applied, the merged change is live and broken: go on to step 8.
-- If an `apply` call returns `applying` (`ended: false`) or is cut off before it returns, call `apply({ convergence_id })` again with nothing else: the convergence goes on in the engine, and the call follows it to its next stop, handled as above. At `awaiting_approval` on the plan you approved, the approval never arrived: approve it again by its digest.
+- `applying` (`ended: false`): the call reached the server's deadline and the round is still applying in the engine. Call `apply({ convergence_id })` again with nothing else; it follows the convergence to its next stop, handled by this list. A call cut off before it returns is made again with the same arguments, as in step 4.
 
 ### 8. Break-fix
 
