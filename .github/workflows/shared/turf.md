@@ -6,7 +6,16 @@
 # server, the Turf engine and restate-server run on the runner host, started
 # here before the MCP gateway comes up, with the cloud credentials in their
 # environment and never in the agent's. Each workflow declares `mcp-servers.turf`
-# itself, with the tools that run may call.
+# itself, with the tools that run may call, and the bearer token the gateway sends:
+#
+#   headers:
+#     Authorization: "Bearer ${{ secrets.TURF_MCP_AUTH_TOKEN }}"
+#
+# The token is what makes the tool list hold. The agent's container can reach
+# host.docker.internal, so without it the agent could call the server directly
+# and skip the gateway. The server requires the token (TURF_MCP_AUTH_TOKEN, a
+# repository secret); only this step and the gateway's step get it, never the
+# agent's.
 engine:
   mcp:
     tool-timeout: 10m
@@ -73,6 +82,7 @@ pre-agent-steps:
       TURF_MISE: "off"
       TURF_TELEMETRY: "off"
       TURF_RESTATE_SERVER: /usr/local/bin/restate-server
+      TURF_MCP_AUTH_TOKEN: ${{ secrets.TURF_MCP_AUTH_TOKEN }}
       AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
       AWS_REGION: ${{ vars.AWS_REGION }}
       TF_VAR_fleet_size: ${{ vars.TF_VAR_fleet_size }}
@@ -83,6 +93,7 @@ pre-agent-steps:
     run: |
       set -euo pipefail
       : "${AWS_ROLE_ARN:?AWS_ROLE_ARN is empty: is this job running in a GitHub Environment that defines it?}"
+      : "${TURF_MCP_AUTH_TOKEN:?TURF_MCP_AUTH_TOKEN is empty: set the repository secret to a random string, as the README Bootstrap describes}"
       # The job's OIDC token buys a one-hour session for this environment's role. The
       # credentials stay in this shell: the engine (providers) and the server (the S3
       # backend) inherit them; the agent container never sees them.
@@ -118,10 +129,13 @@ pre-agent-steps:
       fi
       "$BIN" engine status
 
+      # 0.0.0.0, so the gateway's container reaches it at host.docker.internal; the
+      # bearer token in TURF_MCP_AUTH_TOKEN is what keeps everyone else out.
       nohup "$BIN" --transport http --addr 0.0.0.0:3000 >"$LOGS/turf-server.out" 2>&1 &
       SERVER=$!
       for i in $(seq 1 30); do
         if curl -fsS -o /dev/null -X POST http://127.0.0.1:3000/mcp \
+             -H "Authorization: Bearer $TURF_MCP_AUTH_TOKEN" \
              -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' \
              -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"probe","version":"0"}}}'; then
           echo "turf-mcp-server is serving /mcp"
