@@ -52,7 +52,7 @@ mcp-servers:
     url: http://localhost:3000/mcp
     headers:
       Authorization: "Bearer ${{ secrets.TURF_MCP_AUTH_TOKEN }}"
-    allowed: [skill_deployment, read_skill_file, init, open, up, show, status, cancel, apply, output, state_list]
+    allowed: [skill_deployment, read_skill_file, init, open, up, plan, show, status, cancel, apply, output, state_list]
 safe-outputs:
   # The label check above fails on purpose whenever staging has not converged; gh-aw would file
   # an "[aw] … failed before agent execution started" issue for each, so that report is off.

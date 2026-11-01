@@ -64,7 +64,7 @@ pre-agent-steps:
   - name: Install Turf and restate-server
     env:
       RESTATE_VERSION: "1.8.1"
-      TURF_VERSION: "v1.2.0"
+      TURF_VERSION: "v1.3.0"
     run: |
       set -euo pipefail
       cd "$RUNNER_TEMP"
