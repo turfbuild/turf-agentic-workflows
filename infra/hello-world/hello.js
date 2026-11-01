@@ -16,7 +16,7 @@ module.exports.handler = async (event) => {
     statusCode: 200,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      greeting: message,
+      message,
       function: process.env.AWS_LAMBDA_FUNCTION_NAME,
       environment: process.env.ENVIRONMENT,
       region: process.env.AWS_REGION,
