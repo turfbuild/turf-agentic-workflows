@@ -19,6 +19,13 @@ concurrency:
   cancel-in-progress: false
 imports:
   - shared/turf.md
+tools:
+  # The break-fix rollback reads the merged commit's diff; gh-aw enables the other git
+  # commands itself once create-pull-request is configured.
+  bash: ["git diff:*", "git show:*"]
+pre-agent-steps:
+  - name: Deepen the checkout so HEAD^ exists for a break-fix rollback
+    run: git fetch --deepen=1 origin || true
 mcp-servers:
   turf:
     type: http
@@ -31,6 +38,10 @@ safe-outputs:
   create-issue:
     max: 1
     title-prefix: "[turf staging] "
+  create-pull-request:
+    max: 1
+    draft: false
+    base-branch: main
   add-labels:
     allowed: ["turf/applied-staging"]
     target: "*"
@@ -38,6 +49,6 @@ safe-outputs:
 
 # Turf apply (staging)
 
-You are deploying autonomously. This run **applies** to the environment the context names, under that environment's approval rule; no person is watching, so every decision is the rule's and every report is for the record. The commit being deployed is checked out in the workspace. The label to add on the pull request when the apply completes: `turf/applied-staging`.
+You are deploying autonomously. This run **applies** to the environment the context names, under that environment's approval rule; no person is watching, so every decision is the rule's and every report is for the record. The commit being deployed is checked out in the workspace. If the convergence fails after resources were applied, open the break-fix pull request the runbook's step 8 describes. The label to add on the pull request when the apply completes: `turf/applied-staging`.
 
 {{#runtime-import .github/workflows/shared/turf-runbook.md}}

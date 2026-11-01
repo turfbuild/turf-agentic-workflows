@@ -21,6 +21,10 @@ concurrency:
   cancel-in-progress: false
 imports:
   - shared/turf.md
+tools:
+  # The break-fix rollback reads the merged commit's diff; gh-aw enables the other git
+  # commands itself once create-pull-request is configured.
+  bash: ["git diff:*", "git show:*"]
 pre-agent-steps:
   # gh-aw ends a run green whenever its agent finishes, so a staging run is green even when
   # its convergence failed (a failed verify, say). The staging agent labels the merged pull
@@ -37,6 +41,8 @@ pre-agent-steps:
         echo "::error::Staging has not converged for $HEAD_SHA (no turf/applied-staging label on its pull request); production waits."
         exit 1
       fi
+  - name: Deepen the checkout so HEAD^ exists for a break-fix rollback
+    run: git fetch --deepen=1 origin || true
 mcp-servers:
   turf:
     type: http
@@ -49,6 +55,10 @@ safe-outputs:
   create-issue:
     max: 1
     title-prefix: "[turf production] "
+  create-pull-request:
+    max: 1
+    draft: false
+    base-branch: main
   add-labels:
     allowed: ["turf/applied-production"]
     target: "*"
@@ -56,6 +66,6 @@ safe-outputs:
 
 # Turf apply (production)
 
-You are deploying autonomously. This run **applies** to the environment the context names, under that environment's approval rule; no person is watching, so every decision is the rule's and every report is for the record. The commit being deployed is checked out in the workspace. The label to add on the pull request when the apply completes: `turf/applied-production`.
+You are deploying autonomously. This run **applies** to the environment the context names, under that environment's approval rule; no person is watching, so every decision is the rule's and every report is for the record. The commit being deployed is checked out in the workspace. If the convergence fails after resources were applied, open the break-fix pull request the runbook's step 8 describes. The label to add on the pull request when the apply completes: `turf/applied-production`.
 
 {{#runtime-import .github/workflows/shared/turf-runbook.md}}

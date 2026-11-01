@@ -37,6 +37,14 @@ Everything the agent needs to know about a run comes from files on disk:
 `.turf-ci/comments.json` (the earlier plan comment to compare against), written by a step
 before the agent starts, and the two policy files.
 
+A failed verify halts the apply. The agent reports why, withholds the label production
+waits for, and opens a break-fix pull request: a limited rollback, never a wholesale revert
+of the commit, since a `moved` block, an import, an upgrade or a delete has already
+happened ([the runbook's step 8](.github/workflows/shared/turf-runbook.md)). `turf-plan`
+reviews that pull request like any other, provided the repository secret
+`GH_AW_CI_TRIGGER_TOKEN` holds a fine-grained token with Contents read and write, as
+[gh-aw's docs describe](https://github.github.com/gh-aw/reference/triggering-ci/).
+
 ## Use it in your own repository
 
 gh-aw imports resolve across repositories, so one line brings the whole component (Turf
