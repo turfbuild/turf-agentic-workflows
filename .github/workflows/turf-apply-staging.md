@@ -33,6 +33,8 @@ mcp-servers:
   turf:
     type: http
     url: http://localhost:3000/mcp
+    headers:
+      Authorization: "Bearer ${{ secrets.TURF_MCP_AUTH_TOKEN }}"
     allowed: [skill_deployment, read_skill_file, init, open, up, show, status, cancel, apply, output, state_list]
 safe-outputs:
   add-comment:

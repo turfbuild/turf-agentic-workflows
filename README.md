@@ -30,7 +30,9 @@ restate-server run on the runner itself, started by
 [`.github/workflows/shared/turf.md`](.github/workflows/shared/turf.md) before the agent:
 the cloud credentials (an OIDC-minted AWS session for the environment's role) live in
 those processes and never in the agent's. Each workflow lists the Turf tools its run may
-call, enforced at gh-aw's MCP gateway: a plan run cannot `apply`.
+call, enforced at gh-aw's MCP gateway: a plan run cannot `apply`. The server requires a
+bearer token, which only the gateway sends. The agent's container can reach the runner, so
+without the token the agent could call the server directly and skip that list.
 
 Everything the agent needs to know about a run comes from files on disk:
 `.turf-ci/context.json` (environment, approval rule, backend, head commit) and
@@ -58,6 +60,8 @@ mcp-servers:
   turf:
     type: http
     url: http://localhost:3000/mcp
+    headers:
+      Authorization: "Bearer ${{ secrets.TURF_MCP_AUTH_TOKEN }}"
     allowed: [skill_deployment, read_skill_file, init, open, up, show, status, cancel]
 ```
 
@@ -65,7 +69,8 @@ Pin `@main` to a tag or a commit when you want a fixed version; `gh aw compile` 
 import by commit SHA under `.github/aw/imports/`. The import expects a GitHub Environment on the
 job (`environment: staging`, say) that defines `AWS_ROLE_ARN`, `AWS_REGION`, `TF_STATE_BUCKET`,
 `TF_STATE_KEY`, `TURF_ENVIRONMENT` and `TURF_APPROVAL_POLICY`, plus any `TF_VAR_*` your
-configuration reads; it plans the configuration at `infra/` and leaves the Turf tool list to your
+configuration reads, and the repository secret `TURF_MCP_AUTH_TOKEN` (any random string: the
+import starts the server with it, and the `headers:` above send it); it plans the configuration at `infra/` and leaves the Turf tool list to your
 workflow, so a plan run cannot `apply`. The runbook the agent follows can be pulled at run time
 by URL, or copied and edited:
 
@@ -85,7 +90,9 @@ files here and rewrite the paragraphs for your environments.
    Environments `staging` and `production` with their variables.
 3. `gh secret set ANTHROPIC_API_KEY -R turfbuild/turf-agentic-workflows`: the agent's
    engine is Claude.
-4. Open a pull request that changes `infra/`.
+4. `gh secret set TURF_MCP_AUTH_TOKEN -R turfbuild/turf-agentic-workflows --body "$(openssl rand -hex 32)"`:
+   the bearer token the Turf server requires and the MCP gateway sends.
+5. Open a pull request that changes `infra/`.
 
 ## If the state stays locked
 
