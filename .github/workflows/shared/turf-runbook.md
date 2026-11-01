@@ -110,7 +110,7 @@ Compose a limited rollback instead. The sandbox allows these git commands by nam
 2. Start the branch: `git checkout -b break-fix-<pull_request>` (a flat name: git cannot create `break-fix/…` while a branch named `break-fix` exists).
 3. Restore only the files whose change caused the failure, one `git checkout HEAD^ -- <file>` each. Keep every change of the kinds above. Re-read what you restored against what you kept: a kept rename must still be referenced by the restored files.
 4. Commit: `git commit -am "Revert the <what> of #<pull_request>: <environment> verify failed"`.
-5. Open the pull request with `create_pull_request`: the same title, and a body with (a) what failed, quoting the action's error and your progress lines, with the run's link; (b) what was reverted and what was kept, and why; (c) what merging does (re-deploys the previous <what> to <environment>); (d) that the label was withheld, so production did not start.
+5. Open the pull request with `create_pull_request`: `title` is the commit's first line (`Revert the <what> of #<pull_request>: <environment> verify failed`, never the merged pull request's title), `branch` is the branch from step 2, and the body has (a) what failed, quoting the action's error and your progress lines, with the run's link; (b) what was reverted and what was kept, and why; (c) what merging does (re-deploys the previous <what> to <environment>); (d) that the label was withheld, so production did not start.
 
 If the failing change is itself one of the kinds above, no rollback undoes it: open an issue with `create_issue` instead, titled with the heading line, saying what a person must decide.
 
