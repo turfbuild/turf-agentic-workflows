@@ -103,7 +103,7 @@ moved {
 # the fleet's URLs or the function code change, so the verify action in
 # rollout.turf.hcl runs after the first create and after every patch, once for
 # the whole fleet, with the real URLs.
-resource "terraform_data" "release" {
+resource "terraform_data" "rollout" {
   input = {
     greeting    = var.greeting
     environment = var.environment
@@ -112,4 +112,11 @@ resource "terraform_data" "release" {
   }
 
   depends_on = [aws_lambda_permission.public]
+}
+
+# Renamed from terraform_data.release, for the rollout it marks (rollout.turf.hcl verifies it).
+# The moved block carries the state over, so the plan is a move, not a replacement.
+moved {
+  from = terraform_data.release
+  to   = terraform_data.rollout
 }
