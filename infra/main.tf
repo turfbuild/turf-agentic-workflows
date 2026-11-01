@@ -61,11 +61,18 @@ resource "aws_lambda_function" "hello" {
 # A public URL per function. The demo wants the agent to GET each one from the
 # workflow sandbox, so no IAM auth; the permission below is what AWS requires
 # before an unauthenticated URL answers.
-resource "aws_lambda_function_url" "hello" {
+resource "aws_lambda_function_url" "public" {
   count = var.fleet_size
 
   function_name      = aws_lambda_function.hello[count.index].function_name
   authorization_type = "NONE"
+}
+
+# Renamed from aws_lambda_function_url.hello: it is the public URL, so say so. The moved
+# block carries the state over, so the plan is a move, not a replacement.
+moved {
+  from = aws_lambda_function_url.hello
+  to   = aws_lambda_function_url.public
 }
 
 resource "aws_lambda_permission" "public_url" {
@@ -86,7 +93,7 @@ resource "terraform_data" "release" {
   input = {
     greeting    = var.greeting
     environment = var.environment
-    urls        = aws_lambda_function_url.hello[*].function_url
+    urls        = aws_lambda_function_url.public[*].function_url
     code        = data.archive_file.hello.output_base64sha256
   }
 

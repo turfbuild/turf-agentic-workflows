@@ -5,7 +5,7 @@ output "function_names" {
 
 output "urls" {
   description = "Public URL of every function in the fleet."
-  value       = aws_lambda_function_url.hello[*].function_url
+  value       = aws_lambda_function_url.public[*].function_url
 }
 
 output "role_arn" {
