@@ -52,6 +52,9 @@ mcp-servers:
     url: http://localhost:3000/mcp
     allowed: [skill_deployment, read_skill_file, init, open, up, show, status, cancel, apply, output, state_list]
 safe-outputs:
+  # The label check above fails on purpose whenever staging has not converged; gh-aw would file
+  # an "[aw] … failed before agent execution started" issue for each, so that report is off.
+  report-failure-as-issue: false
   add-comment:
     max: 2
     target: "*"
