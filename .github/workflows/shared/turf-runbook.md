@@ -48,7 +48,7 @@ Summarize in the deployment skill's format: the counts line, one line per addres
 
 Evaluate `policy/approval.md` for the context's `approval_policy` and write the verdict: `approve` or `refuse`, with the rule that decided it.
 
-If `.turf-ci/comments.json` holds a comment whose turf block has `"kind": "plan"`, compare that block's `changes` and `updates` with this plan's. Say "matches the reviewed plan", or list what differs.
+If `.turf-ci/comments.json` holds a comment whose turf block has `"kind": "plan"` **and the same `environment` as this run**, compare that block's `changes` and `updates` with this plan's. Say "matches the reviewed plan", or list what differs. A plan block for another environment is not this run's reviewed plan: the pull request's plan run is staging's, so production is judged on its own, under its own policy, and the report says so.
 
 ### 6. Report
 
@@ -85,7 +85,7 @@ The workflow's own instructions, above this runbook, say whether this run **plan
 
 **Plan only.** Post the report, then `cancel({ cause: "plan posted for review; this run holds nothing" })` so the state lock is released. Do that whatever the verdict was.
 
-**Apply.** If the verdict is `refuse`, or step 5 found a reviewed plan that this plan does not match: post the report with `"kind": "refused"` and the rule, or the difference, as the reason, then `cancel({ cause: "<the rule that refused, or what differs from the reviewed plan>" })`, and stop; nothing is applied. The reviewed plan is the only plan an apply run approves on its own. If the verdict is `approve` and the plan matches, or there was no reviewed plan: `apply({ convergence_id, plan_digest })` with the digest `up` returned, then converge:
+**Apply.** If the verdict is `refuse`, or step 5 found a reviewed plan for this environment that this plan does not match: post the report with `"kind": "refused"` and the rule, or the difference, as the reason, then `cancel({ cause: "<the rule that refused, or what differs from the reviewed plan>" })`, and stop; nothing is applied. When a reviewed plan for this environment exists, it is the only plan an apply run approves on its own. If the verdict is `approve` and the plan matches, or there was no reviewed plan for this environment: `apply({ convergence_id, plan_digest })` with the digest `up` returned, then converge:
 
 - `awaiting_approval` (a later round): review it exactly as in step 5 under the same policy; approve it by its own digest, or refuse as above.
 - `awaiting_actions`: perform every open request with your tools, as its prompt says, and answer all of them in one `apply({ convergence_id, action_results })`. Say what you did in `progress`, one line each. A step you could not perform, or a check that failed, is `succeeded: false` with an `error` diagnostic saying why. Never report a success you did not observe. The sandbox runs only simple shell commands: fetch a URL with one plain `curl -sS -m 15 -w '\n%{http_code}' <url>` per URL, with no loop, pipe, `sleep` or `$(...)`; to retry, call it again.
