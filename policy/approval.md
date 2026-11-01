@@ -4,6 +4,8 @@ Which plans the agent may approve on its own, per environment. The GitHub Enviro
 names its rule in `TURF_APPROVAL_POLICY`, which the run context carries as
 `approval_policy`. The deployment skill's own rules still apply underneath: never a
 destroy plan, never a warning you cannot explain, never a plan the providers rule refused.
+A move (a `moved` block: a new address in the state, nothing changed in the cloud) is
+neither a create nor a delete, and is allowed under both rules.
 
 ## `staging`
 
