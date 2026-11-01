@@ -27,7 +27,7 @@ action "turf_action" "verify" {
 }
 
 action_trigger "verify" {
-  target     = terraform_data.release
+  target     = terraform_data.rollout
   events     = [after_create, after_update]
   actions    = [action.turf_action.verify]
   on_failure = halt
