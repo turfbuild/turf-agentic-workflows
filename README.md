@@ -89,6 +89,12 @@ is in progress, then delete it:
 aws s3 rm s3://<bucket>/staging/lambda-fleet.tfstate.tflock
 ```
 
+## Community
+
+Questions, ideas, or your own take on an agentic pipeline: https://turf.build/discord/. A bug in
+Turf goes to https://github.com/turfbuild/turf/issues. Release notes by email:
+https://turf.build/newsletter/. Everything else: https://turf.build/community/.
+
 ## Trademarks
 
 Terraform is a registered trademark of HashiCorp. GitHub and GitHub Actions are trademarks
