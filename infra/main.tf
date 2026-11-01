@@ -75,7 +75,7 @@ moved {
   to   = aws_lambda_function_url.public
 }
 
-resource "aws_lambda_permission" "public_url" {
+resource "aws_lambda_permission" "public" {
   count = var.fleet_size
 
   statement_id           = "AllowPublicFunctionUrl"
@@ -83,6 +83,13 @@ resource "aws_lambda_permission" "public_url" {
   function_name          = aws_lambda_function.hello[count.index].function_name
   principal              = "*"
   function_url_auth_type = "NONE"
+}
+
+# Renamed from aws_lambda_permission.public_url, to match the URL resource it permits. The
+# moved block carries the state over, so the plan is a move, not a replacement.
+moved {
+  from = aws_lambda_permission.public_url
+  to   = aws_lambda_permission.public
 }
 
 # The release marker. Its input changes whenever the greeting, the environment,
@@ -97,5 +104,5 @@ resource "terraform_data" "release" {
     code        = data.archive_file.hello.output_base64sha256
   }
 
-  depends_on = [aws_lambda_permission.public_url]
+  depends_on = [aws_lambda_permission.public]
 }
