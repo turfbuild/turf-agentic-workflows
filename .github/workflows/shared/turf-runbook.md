@@ -104,12 +104,13 @@ Only after an apply run ended `failed` because a turf action reported `succeeded
 - a provider or module upgrade: state schemas do not downgrade;
 - a delete: the data is gone.
 
-Compose a limited rollback instead:
+Compose a limited rollback instead. The sandbox allows these git commands by name, so run each as its own call, exactly in this shape, never chained with `&&` and never with options before the subcommand (the committer's name is already configured):
 
 1. Read the commit's diff: `git diff HEAD^ HEAD -- infra/`.
-2. Restore only the files whose change caused the failure, one `git checkout HEAD^ -- <file>` each. Keep every change of the kinds above. Re-read what you restored against what you kept: a kept rename must still be referenced by the restored files.
-3. Commit: `git -c user.name=turf -c user.email=turf@users.noreply.github.com commit -am "Revert the <what> of #<pull_request>: <environment> verify failed"`.
-4. Open the pull request with `create_pull_request`: the same title, and a body with (a) what failed, quoting the action's error and your progress lines, with the run's link; (b) what was reverted and what was kept, and why; (c) what merging does (re-deploys the previous <what> to <environment>); (d) that the label was withheld, so production did not start.
+2. Start the branch: `git checkout -b break-fix/<pull_request>`.
+3. Restore only the files whose change caused the failure, one `git checkout HEAD^ -- <file>` each. Keep every change of the kinds above. Re-read what you restored against what you kept: a kept rename must still be referenced by the restored files.
+4. Commit: `git commit -am "Revert the <what> of #<pull_request>: <environment> verify failed"`.
+5. Open the pull request with `create_pull_request`: the same title, and a body with (a) what failed, quoting the action's error and your progress lines, with the run's link; (b) what was reverted and what was kept, and why; (c) what merging does (re-deploys the previous <what> to <environment>); (d) that the label was withheld, so production did not start.
 
 If the failing change is itself one of the kinds above, no rollback undoes it: open an issue with `create_issue` instead, titled with the heading line, saying what a person must decide.
 

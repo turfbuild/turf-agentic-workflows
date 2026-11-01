@@ -41,8 +41,11 @@ pre-agent-steps:
         echo "::error::Staging has not converged for $HEAD_SHA (no turf/applied-staging label on its pull request); production waits."
         exit 1
       fi
-  - name: Deepen the checkout so HEAD^ exists for a break-fix rollback
-    run: git fetch --deepen=1 origin || true
+  - name: Deepen the checkout and name the committer, for a break-fix rollback
+    run: |
+      git fetch --deepen=1 origin || true
+      git config user.name turf
+      git config user.email turf@users.noreply.github.com
 mcp-servers:
   turf:
     type: http

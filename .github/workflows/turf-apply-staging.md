@@ -24,8 +24,11 @@ tools:
   # commands itself once create-pull-request is configured.
   bash: ["git diff:*", "git show:*"]
 pre-agent-steps:
-  - name: Deepen the checkout so HEAD^ exists for a break-fix rollback
-    run: git fetch --deepen=1 origin || true
+  - name: Deepen the checkout and name the committer, for a break-fix rollback
+    run: |
+      git fetch --deepen=1 origin || true
+      git config user.name turf
+      git config user.email turf@users.noreply.github.com
 mcp-servers:
   turf:
     type: http
