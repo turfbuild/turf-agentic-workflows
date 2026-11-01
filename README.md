@@ -3,18 +3,22 @@
 An autonomous infrastructure loop: [Turf](https://turf.build) plans and applies a
 Terraform configuration from inside
 [GitHub Agentic Workflows](https://github.github.com/gh-aw/), and the agent driving it
-reviews the plan, checks the providers, approves under a per-environment rule, verifies
+reviews the plan, checks the providers, approves under a per-environment policy, verifies
 the rollout by calling what it deployed, and reports on the pull request.
+
+**Read the paper.** [Pull Request to Production](https://turf.build/reference-architectures/pull-request-to-production/)
+walks this loop through pull requests #7, #5 and #6 of this repository, with the agent's
+transcripts (13 pages).
 
 ```
 pull request touching infra/   →  turf-plan              plan, scan, verdict → one PR comment, then cancel
-merge to main                  →  turf-apply-staging     plan, approve by the staging rule, apply, verify, report
-staging succeeded              →  turf-apply-production  the same under the production rule
+merge to main                  →  turf-apply-staging     plan, approve by the staging policy, apply, verify, report
+staging succeeded              →  turf-apply-production  the same under the production policy
 ```
 
 The configuration is a fleet of AWS Lambda functions with public URLs
 ([`infra/`](infra)); the verify step is a Turf action that fetches every URL and checks its
-greeting and environment ([`infra/rollout.turf.hcl`](infra/rollout.turf.hcl)). The rules the agent reads are
+greeting and environment ([`infra/rollout.turf.hcl`](infra/rollout.turf.hcl)). The policies the agent reads are
 prose in [`policy/`](policy). The demonstration environment (two GitHub Environments with
 their variables, one AWS role per environment, the state bucket) is Terraform in
 [`setup/`](setup), applied locally with Turf.
