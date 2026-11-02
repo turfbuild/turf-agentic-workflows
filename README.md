@@ -62,7 +62,7 @@ mcp-servers:
     url: http://localhost:3000/mcp
     headers:
       Authorization: "Bearer ${{ secrets.TURF_MCP_AUTH_TOKEN }}"
-    allowed: [skill_deployment, read_skill_file, init, open, up, show, status, cancel]
+    allowed: [skill_deployment, read_skill_file, init, open, up, plan, show, status, cancel]
 ```
 
 Pin `@main` to a tag or a commit when you want a fixed version; `gh aw compile` caches the
@@ -77,6 +77,12 @@ by URL, or copied and edited:
 ```markdown
 {{#runtime-import https://raw.githubusercontent.com/turfbuild/turf-agentic-workflows/main/.github/workflows/shared/turf-runbook.md}}
 ```
+
+The runbook on `main` follows the Turf release the import on `main` installs (`TURF_VERSION`
+in `shared/turf.md`; from 1.3 each round is planned with `plan` before `apply` approves it):
+pull both from `main`, or pin both to the same commit. The import is cached at compile time and
+the runbook fetched at run time, so when you take a new release, recompile, and add any tool the
+runbook names to your `allowed:` list (from 1.3, `plan`).
 
 It reads `policy/approval.md` and `policy/providers.md` from your repository: copy the two
 files here and rewrite the paragraphs for your environments.
