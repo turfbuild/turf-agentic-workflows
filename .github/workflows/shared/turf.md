@@ -64,7 +64,7 @@ pre-agent-steps:
   - name: Install Turf and restate-server
     env:
       RESTATE_VERSION: "1.8.1"
-      TURF_VERSION: "v1.3.0"
+      TURF_VERSION: "v1.4.0"
     run: |
       set -euo pipefail
       cd "$RUNNER_TEMP"
@@ -81,6 +81,9 @@ pre-agent-steps:
     env:
       TURF_MISE: "off"
       TURF_TELEMETRY: "off"
+      # The Turf console (1.4) would listen on the runner's loopback, where no
+      # reviewer can open it; off, results carry no console_url to paste into a PR.
+      TURF_CONSOLE_ADDR: "off"
       TURF_RESTATE_SERVER: /usr/local/bin/restate-server
       TURF_MCP_AUTH_TOKEN: ${{ secrets.TURF_MCP_AUTH_TOKEN }}
       AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
