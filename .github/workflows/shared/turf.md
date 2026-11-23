@@ -63,6 +63,11 @@ pre-agent-steps:
       cat .turf-ci/context.json
   - name: Install Turf and restate-server
     env:
+      # Accepting the Turf license terms (https://turf.build/license/v1/) is the
+      # repository's to do: someone who accepts them sets the repository variable
+      # TURF_ACCEPT_EULA to yes. Setting it accepts the terms. Without it every
+      # gated turf call here exits 77.
+      TURF_ACCEPT_EULA: ${{ vars.TURF_ACCEPT_EULA }}
       RESTATE_VERSION: "1.8.1"
       TURF_VERSION: "v1.4.0"
     run: |
@@ -79,6 +84,11 @@ pre-agent-steps:
       "$HOME/.turf/bin/turf-mcp-server" --version
   - name: Mint AWS credentials and start the Turf engine and server
     env:
+      # The repository variable TURF_ACCEPT_EULA, set to yes by someone who accepts
+      # the Turf license terms (https://turf.build/license/v1/); setting it accepts
+      # them. Without it the engine starts nothing and the server refuses every
+      # call, so this step stops first.
+      TURF_ACCEPT_EULA: ${{ vars.TURF_ACCEPT_EULA }}
       TURF_MISE: "off"
       TURF_TELEMETRY: "off"
       # The Turf console (1.4) would listen on the runner's loopback, where no
@@ -97,6 +107,10 @@ pre-agent-steps:
       set -euo pipefail
       : "${AWS_ROLE_ARN:?AWS_ROLE_ARN is empty: is this job running in a GitHub Environment that defines it?}"
       : "${TURF_MCP_AUTH_TOKEN:?TURF_MCP_AUTH_TOKEN is empty: set the repository secret to a random string, as the README Bootstrap describes}"
+      if [ "$(printf '%s' "${TURF_ACCEPT_EULA:-}" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')" != yes ]; then
+        echo '::error::the Turf license terms are not accepted: set the repository variable TURF_ACCEPT_EULA to yes once you accept them (https://turf.build/license/v1/), as the README Bootstrap describes'
+        exit 77
+      fi
       # The job's OIDC token buys a one-hour session for this environment's role. The
       # credentials stay in this shell: the engine (providers) and the server (the S3
       # backend) inherit them; the agent container never sees them.
