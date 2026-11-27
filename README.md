@@ -69,8 +69,10 @@ Pin `@main` to a tag or a commit when you want a fixed version; `gh aw compile` 
 import by commit SHA under `.github/aw/imports/`. The import expects a GitHub Environment on the
 job (`environment: staging`, say) that defines `AWS_ROLE_ARN`, `AWS_REGION`, `TF_STATE_BUCKET`,
 `TF_STATE_KEY`, `TURF_ENVIRONMENT` and `TURF_APPROVAL_POLICY`, plus any `TF_VAR_*` your
-configuration reads, and the repository secret `TURF_MCP_AUTH_TOKEN` (any random string: the
-import starts the server with it, and the `headers:` above send it); it plans the configuration at `infra/` and leaves the Turf tool list to your
+configuration reads, the repository secret `TURF_MCP_AUTH_TOKEN` (any random string: the
+import starts the server with it, and the `headers:` above send it), and the repository
+variable `TURF_ACCEPT_EULA` set to `yes` once you accept the Turf license terms (see
+[Bootstrap](#bootstrap)); it plans the configuration at `infra/` and leaves the Turf tool list to your
 workflow, so a plan run cannot `apply`. The runbook the agent follows can be pulled at run time
 by URL, or copied and edited:
 
@@ -90,7 +92,9 @@ files here and rewrite the paragraphs for your environments.
 ## Bootstrap
 
 1. `aws login` (or an `AWS_PROFILE`) and `export GITHUB_TOKEN=$(gh auth token)` in the
-   environment of the Turf engine that will apply `setup/`.
+   environment of the Turf engine that will apply `setup/`. On this machine, run
+   `turf license accept` once if you have not: from release 1.5 no Turf binary does any work
+   until the [Turf license terms](https://turf.build/license/v1/) are accepted.
 2. `turf -C setup up`. It creates the OIDC provider (set `create_oidc_provider = false` if
    the account has one), the state bucket, a role per environment, and the GitHub
    Environments `staging` and `production` with their variables.
@@ -98,7 +102,17 @@ files here and rewrite the paragraphs for your environments.
    engine is Claude.
 4. `gh secret set TURF_MCP_AUTH_TOKEN -R turfbuild/turf-agentic-workflows --body "$(openssl rand -hex 32)"`:
    the bearer token the Turf server requires and the MCP gateway sends.
-5. Open a pull request that changes `infra/`.
+5. Accept the Turf license: set the repository variable `TURF_ACCEPT_EULA` to `yes`, with
+   `gh variable set TURF_ACCEPT_EULA -R turfbuild/turf-agentic-workflows --body yes`. Setting
+   it accepts the [Turf Community Edition License](https://turf.build/license/v1/) for the
+   runs in this repository, so it is for someone who has read the terms and accepts them
+   (free for individuals, education and small businesses within the Community limits;
+   government and larger organizations need a
+   [commercial license](https://turf.build/licensing/)). A CI runner is never asked: without
+   the variable the start step stops with exit code 77, and an engine or server started anyway
+   would do no work. How each Turf binary checks:
+   https://turf.build/docs/start/install/#accept-the-license.
+6. Open a pull request that changes `infra/`.
 
 ## If the state stays locked
 
