@@ -69,7 +69,7 @@ pre-agent-steps:
       # gated turf call here exits 77.
       TURF_ACCEPT_EULA: ${{ vars.TURF_ACCEPT_EULA }}
       RESTATE_VERSION: "1.8.1"
-      TURF_VERSION: "v1.5.0"
+      TURF_VERSION: "v1.5.1"
     run: |
       set -euo pipefail
       cd "$RUNNER_TEMP"
